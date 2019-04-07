@@ -42,7 +42,7 @@ public class PieceInfoView {
 		System.out.println("minimumSize = " + minimumSize);
 		
 		//Composite composite = shell;
-		//shell.setLayout(new FormLayout());
+		shell.setLayout(new FormLayout());
 		initialize(shell);
 		refresh();
 		shell.open();

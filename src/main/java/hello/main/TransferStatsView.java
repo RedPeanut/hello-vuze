@@ -2,16 +2,11 @@ package hello.main;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Shell;
-
-import gudy.azureus2.ui.swt.Utils;
-import gudy.azureus2.ui.swt.components.graphics.SpeedGraphic;
 
 public class TransferStatsView {
 	public static void main(String[] args) {
@@ -32,9 +27,10 @@ public class TransferStatsView {
 		System.out.println("minimumSize = " + minimumSize);
 		
 		//Composite composite = shell;
-		//shell.setLayout(new FormLayout());
+		shell.setLayout(new FormLayout());
 		initialize(shell);
 		//refresh();
+		shell.pack();
 		shell.open();
 		
 		// Set up the event loop.

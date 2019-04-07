@@ -12,15 +12,16 @@ import org.eclipse.swt.widgets.Listener;
 
 import hello.util.Log;
 
-public class SpeedGraphic {
+public class SpeedGraphic extends ScaledGraphic {
 
 	private static String TAG = SpeedGraphic.class.getSimpleName();
 	
-	protected Canvas drawCanvas;
 	protected Image bufferImage;
 	
-	public void initialize(Canvas in) {
-		this.drawCanvas = in;
+	public void initialize(Canvas canvas) {
+		
+		super.initialize(canvas);
+		
 		drawCanvas.addPaintListener(new PaintListener() {
 			@Override
 			public void paintControl(PaintEvent e) {
@@ -28,6 +29,12 @@ public class SpeedGraphic {
 				if (bufferImage != null && !bufferImage.isDisposed()) {
 					Log.d(TAG, "bufferImage != null && !bufferImage.isDisposed()");
 					Rectangle bounds = bufferImage.getBounds();
+					if (bounds.width >= e.width && bounds.height >= e.height) {
+						e.gc.drawImage(bufferImage,
+								e.x, e.y, e.width, e.height,
+								e.x, e.y, e.width, e.height
+						);
+					}
 				}
 			}
 		});
@@ -38,18 +45,40 @@ public class SpeedGraphic {
 		});
 	}
 	
-	private void drawChart(boolean sizeChanged) {
-		if (drawCanvas == null || drawCanvas.isDisposed() || !drawCanvas.isVisible()) {
+	private void drawChart() {
+		
+		if (drawCanvas == null || drawCanvas.isDisposed()) // || !drawCanvas.isVisible())
 			return;
-		}
 		
 		GC gcImage = null;
+		
+		drawScale();
+		
 		Rectangle bounds = drawCanvas.getClientArea();
 		if (bounds.isEmpty())
 			return;
 		
+		//If bufferedImage is not null, dispose it
+		if (bufferImage != null && !bufferImage.isDisposed())
+			bufferImage.dispose();
+		
 		bufferImage = new Image(drawCanvas.getDisplay(), bounds);
 		gcImage = new GC(bufferImage);
+		gcImage.drawImage(bufferBackground, 0, 0);
 		
+		gcImage.setAntialias(SWT.ON);
+	}
+	
+	public void refresh() {
+		
+		if (drawCanvas == null || drawCanvas.isDisposed())
+			return;
+		
+		Rectangle bounds = drawCanvas.getClientArea();
+		
+		drawChart();
+		
+		drawCanvas.redraw();
+		drawCanvas.update();
 	}
 }

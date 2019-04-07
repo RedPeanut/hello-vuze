@@ -14,10 +14,10 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 
-public class Main {
+public class Hello {
 	
 	public static void main(String[] args) {
-		new Main().exec(args);
+		new Hello().exec(args);
 	}
 	
 	public void exec(String[] args) {
@@ -27,11 +27,11 @@ public class Main {
 		shell.setLayout(fillLayout);
 		
 		Button listenButton = new Button(shell, SWT.PUSH);
-		listenButton.setText ("listening...");
+		listenButton.setText("listening...");
 		listenButton.addListener(SWT.Selection, listenButtonClickListener);
 		
 		Button sendButton = new Button(shell, SWT.PUSH);
-		sendButton.setText ("sending...");
+		sendButton.setText("sending...");
 		sendButton.addListener(SWT.Selection, sendButtonClickListener);
 		
 		shell.pack();
