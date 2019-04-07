@@ -23,6 +23,7 @@
 package aelitis.net.udp.uc;
 
 import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,7 +44,7 @@ import gudy.azureus2.core3.util.Debug;
 
 public class PRUDPPacketHandlerFactory {
 	
-	public static PRUDPPacketHandler getHandler(int port) {
+	public static PRUDPPacketHandler getHandler(int port) throws UnknownHostException {
 		return (getHandler(port, null));
 	}
 
@@ -51,7 +52,7 @@ public class PRUDPPacketHandlerFactory {
 	
 	public static PRUDPPacketHandler getHandler(
 		int						port,
-		PRUDPRequestHandler		handler) {
+		PRUDPRequestHandler		handler) throws UnknownHostException {
 		return (getHandler(port, null, handler));
 	}
 
@@ -62,7 +63,7 @@ public class PRUDPPacketHandlerFactory {
 		return (getHandler(port, bindIp, handler));
 	}*/
 
-	public static PRUDPReleasablePacketHandler getReleasableHandler(int port) {
+	public static PRUDPReleasablePacketHandler getReleasableHandler(int port) throws UnknownHostException {
 		return (getReleasableHandler(port, null));
 	}
 
@@ -88,7 +89,7 @@ public class PRUDPPacketHandlerFactory {
 	public static PRUDPPacketHandler getHandler(
 		int						port,
 		InetAddress				bindIp,
-		PRUDPRequestHandler		requestHandler) {
+		PRUDPRequestHandler		requestHandler) throws UnknownHostException {
 		
 		final Integer f_port = new Integer(port);
 		try {
@@ -115,7 +116,7 @@ public class PRUDPPacketHandlerFactory {
 
 	public static PRUDPReleasablePacketHandler getReleasableHandler(
 		int						port,
-		PRUDPRequestHandler		requestHandler) {
+		PRUDPRequestHandler		requestHandler) throws UnknownHostException {
 		
 		final Integer	f_port = new Integer(port);
 		

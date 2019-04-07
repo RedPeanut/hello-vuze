@@ -76,7 +76,7 @@ public class TestPRUDP {
 		return (0x8000000000000000L | random.nextLong());
 	}
 	
-	public void run() {
+	public void exec() throws UnknownHostException {
 		int listenPort = 59294; //RandomUtils.generateRandomNetworkListenPort();
 		System.out.println("listenPort = " + listenPort);
 		
@@ -192,7 +192,11 @@ public class TestPRUDP {
 	}
 	
 	public static void main(String[] args) {
-		new TestPRUDP().run();
+		try {
+			new TestPRUDP().exec();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	@Test

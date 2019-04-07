@@ -24,5 +24,10 @@ package aelitis.net.udp.uc.impl;
 
 public interface PRUDPPacketHandler {
 
+	public static final int	PRIORITY_LOW		= 2;
+	public static final int	PRIORITY_MEDIUM		= 1;
+	public static final int	PRIORITY_HIGH		= 0;
+
+	public static final int	PRIORITY_IMMEDIATE	= 99;
 	
 }

@@ -10,6 +10,7 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.PasswordAuthentication;
 import java.net.SocketTimeoutException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,8 +21,11 @@ import aelitis.net.udp.uc.PRUDPRequestHandler;
 import gudy.azureus2.core3.util.AESemaphore;
 import gudy.azureus2.core3.util.AEThread2;
 import gudy.azureus2.core3.util.SystemTime;
+import hello.util.Log;
 
 public class PRUDPPacketHandlerImpl implements PRUDPPacketHandler {
+	
+	private static String TAG = PRUDPPacketHandlerImpl.class.getSimpleName();
 	
 	private static int MAX_PACKET_SIZE = 8192;
 	
@@ -42,20 +46,22 @@ public class PRUDPPacketHandlerImpl implements PRUDPPacketHandler {
 	public PRUDPPacketHandlerImpl(
 			int					_port,
 			InetAddress			_bindIp,
-			PacketTransformer	_packetTransformer) {
+			PacketTransformer	_packetTransformer) throws UnknownHostException {
 		
 		port = _port;
-		targetBindIp = explicitBindIp = _bindIp;
+		explicitBindIp = _bindIp;
 		packetTransformer = _packetTransformer;
-		calcBind();
+		defaultBindIp = InetAddress.getByAddress(new byte[] { 0,0,0,0 });
+		//calcBind();
+		targetBindIp = defaultBindIp;
 		
 		final AESemaphore initSemaphore = new AESemaphore("PRUDPPacketHandler:init");
 		new AEThread2("PRUDPPacketReciever:" + port, true) {
-				public void run() {
-					receiveLoop(initSemaphore);
-				}
-			}.start();
-		
+			public void run() {
+				receiveLoop(initSemaphore);
+			}
+		}.start();
+		//initSemaphore.reserve();
 	}
 	
 	protected void calcBind() {}
@@ -67,6 +73,7 @@ public class PRUDPPacketHandlerImpl implements PRUDPPacketHandler {
 			//System.out.println("destroyed = " + destroyed);
 			//System.out.println("!failed && !destroyed = " + (!failed && !destroyed));
 			
+			// outter loop picks up bind-ip changes
 			while (!failed && !destroyed) {
 				
 				if (socket != null) {
@@ -82,7 +89,7 @@ public class PRUDPPacketHandlerImpl implements PRUDPPacketHandler {
 				
 				try {
 					if (targetBindIp == null) {
-						address = new InetSocketAddress("127.0.0.1",port);
+						address = new InetSocketAddress("127.0.0.1", port);
 						newSocket = new DatagramSocket(port);
 					} else {
 						address = new InetSocketAddress(targetBindIp, port);
@@ -101,17 +108,25 @@ public class PRUDPPacketHandlerImpl implements PRUDPPacketHandler {
 				
 				byte[] buffer = null;
 				
-				//while (!failed && !destroyed) {
-				
-					//if (currentBindIp != targetBindIp)
-						//break;
+				while (!failed && !destroyed) {
+					
+					//int count = SingleCounter0.getInstance().getAndIncreaseCount();
+					//Log.d(TAG, String.format("how many times is this called... #%d", count));
+					
+					if (currentBindIp != targetBindIp)
+						break;
 				
 					try {
+						
+						Log.d(TAG, ">>> 1");
+						
 						if (buffer == null)
 							buffer = new byte[MAX_PACKET_SIZE];
 						DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address);
 						//receiveFromSocket(packet);
 						socket.receive(packet);
+						
+						Log.d(TAG, ">>> 2");
 						
 						long receiveTime = SystemTime.getCurrentTime();
 						
@@ -120,11 +135,14 @@ public class PRUDPPacketHandlerImpl implements PRUDPPacketHandler {
 							process(packet, receiveTime);
 						}
 						
+						Log.d(TAG, ">>> 3");
+						
 					} catch (SocketTimeoutException e) {
 						//
+						Log.d(TAG, "ste is occured...");
 					}
 					
-				//}
+				}
 			}
 		} catch (Throwable e) {
 			e.printStackTrace();
@@ -194,14 +212,14 @@ public class PRUDPPacketHandlerImpl implements PRUDPPacketHandler {
 		}
 	}
 	
-	public void sendAndReceive(PRUDPPacket requestPacket,
+	/*public void sendAndReceive(PRUDPPacket requestPacket,
 			InetSocketAddress destinationAddress,
 			PRUDPPacketReceiver receiver,
 			long timeout, 
 			int priority)
 			throws PRUDPPacketHandlerException {
 		sendAndReceive(null, requestPacket, destinationAddress, receiver, timeout, priority);
-	}
+	}*/
 	
 	public PRUDPPacketHandlerRequestImpl sendAndReceive(
 			PasswordAuthentication		auth,

@@ -86,9 +86,8 @@ public abstract class PRUDPPacket {
 		return (previousPacket);
 	}
 
-	public void setAddress(
-		InetSocketAddress	_address) {
-		address	= _address;
+	public void setAddress(InetSocketAddress _address) {
+		address = _address;
 	}
 
 	public InetSocketAddress getAddress() {

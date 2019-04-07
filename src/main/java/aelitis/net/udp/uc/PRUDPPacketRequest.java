@@ -39,16 +39,15 @@ import java.util.Map;
 
 import aelitis.net.udp.uc.impl.PRUDPPacketHandler;
 
-public abstract class PRUDPPacketRequest
-	extends PRUDPPacket
-{
+public abstract class PRUDPPacketRequest extends PRUDPPacket {
+	
 	public static final int	PR_HEADER_SIZE	= 16;
 
 	private static AEMonitor	classMonitor = new AEMonitor("PRUDPPacketRequest:class");
 
 	private static Map	packetDecoders	= new HashMap();
 
-	private long		connection_id;
+	private long		connectionId;
 	private long		receive_time;
 
 	public static void registerDecoders(Map _decoders) {
@@ -71,21 +70,21 @@ public abstract class PRUDPPacketRequest
 
 	public PRUDPPacketRequest(
 		int		_action,
-		long	_con_id) {
+		long	_conId) {
 		super(_action);
-		connection_id	= _con_id;
+		connectionId	= _conId;
 	}
 
 	protected PRUDPPacketRequest(
 		int		_action,
-		long	_con_id,
-		int		_trans_id) {
-		super(_action, _trans_id);
-		connection_id	= _con_id;
+		long	_conId,
+		int		_transId) {
+		super(_action, _transId);
+		connectionId	= _conId;
 	}
 
 	public long	getConnectionId() {
-		return (connection_id);
+		return (connectionId);
 	}
 
 	public long	getReceiveTime() {
@@ -97,10 +96,9 @@ public abstract class PRUDPPacketRequest
 	}
 
 	public void serialise(DataOutputStream os)
-		throws IOException
-	{
+		throws IOException {
 		// add to this and you need to adjust HEADER_SIZE above
-		os.writeLong(connection_id);
+		os.writeLong(connectionId);
 		os.writeInt(getAction());
 		os.writeInt(getTransactionId());
 	}
@@ -121,6 +119,6 @@ public abstract class PRUDPPacketRequest
 	}
 
 	public String getString() {
-		return (super.getString() + ":request[con=" + connection_id + ",trans=" + getTransactionId() + "]");
+		return (super.getString() + ":request[con=" + connectionId + ",trans=" + getTransactionId() + "]");
 	}
 }

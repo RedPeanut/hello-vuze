@@ -26,21 +26,7 @@ import java.net.InetSocketAddress;
  *
  */
 
-public interface
-PRUDPPacketReceiver
-{
-	public void
-	packetReceived(
-		PRUDPPacketHandlerRequest	request,
-		PRUDPPacket					packet,
-		InetSocketAddress			from_address);
-
-		/**
-		 * receive failed - timeout
-		 * @param e
-		 */
-
-	public void
-	error(
-		PRUDPPacketHandlerException	e);
+public interface PRUDPPacketReceiver {
+	public void packetReceived(PRUDPPacketHandlerRequest request, PRUDPPacket packet, InetSocketAddress fromAddress);
+	public void error(PRUDPPacketHandlerException e);
 }
