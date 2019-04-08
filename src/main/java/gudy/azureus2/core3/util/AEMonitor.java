@@ -6,27 +6,20 @@ package gudy.azureus2.core3.util;
  */
 public class AEMonitor {
 
-	private int dontWait = 1;
+	private int count = 1;
 	
 	public AEMonitor(String string) {}
 
 	public void enter() {
-		enter(null);
-	}
-
-	public void enter(String from) {
 		synchronized(this) {
-			if (dontWait == 0) {
+			if (count == 0) {
 				try {
-					System.out.println("from = " + from);
-					System.out.println("wait() is called...");
 					wait();
-					System.out.println("notified...");
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
 			} else {
-				dontWait--;
+				count--;
 			}
 		}
 	}

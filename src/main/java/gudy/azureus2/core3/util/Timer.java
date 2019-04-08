@@ -28,38 +28,50 @@ public class Timer implements Runnable {
 			long				creationTime,
 			long				when,
 			TimerEventPerformer	performer) {
-			
 		TimerEvent event = new TimerEvent(this, uniqueIdNext++, creationTime, when, performer);
 		events.add(event);
-
 		return (event);
 	}
 	
-	public TimerEventPeriodic addPeriodicEvent(
-			String name,
-			long frequency,
-			TimerEventPerformer performer) {
-		return new TimerEventPeriodic(
-				this,
-				frequency,
-				performer);
+	public TimerEvent addPeriodicEvent(
+			final String name,
+			final long frequency,
+			final TimerEventPerformer performer) {
+		
+		long now = SystemTime.getCurrentTime();
+		TimerEvent event = new TimerEvent(this, uniqueIdNext++, now, now+frequency,
+			new TimerEventPerformer() {
+				@Override
+				public void perform(TimerEvent event) {
+					performer.perform(event);
+					long now = SystemTime.getCurrentTime();
+					addEvent(name, now, now+frequency, this);
+				}
+			}
+		);
+		events.add(event);
+		return event;
 	}
 
 	@Override
 	public void run() {
 		while (true) {
-			TimerEvent	eventToRun = null;
-			synchronized(this) {
-				long	now = SystemTime.getCurrentTime();
+			TimerEvent eventToRun = null;
+			synchronized (this) {
+				
+				if (events.isEmpty())
+					continue;
+				
+				long now = SystemTime.getCurrentTime();
 				Iterator<TimerEvent> it = events.iterator();
-				TimerEvent	nextEvent = it.next();
+				TimerEvent nextEvent = it.next();
 				long rem = nextEvent.getWhen() - now;
 				if (rem <= SystemTime.TIME_GRANULARITY_MILLIS) {
 					eventToRun = nextEvent;
 					it.remove();
 				}
 			}
-			
+
 			if (eventToRun != null) {
 				threadPool.run(eventToRun.getRunnable());
 			}

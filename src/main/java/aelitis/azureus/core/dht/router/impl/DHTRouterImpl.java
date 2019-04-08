@@ -1,12 +1,14 @@
 package aelitis.azureus.core.dht.router.impl;
 
-import gudy.azureus2.core3.util.TimerEventPeriodic;
-
 import java.util.ArrayList;
 import java.util.List;
 
 import aelitis.azureus.core.dht.router.DHTRouter;
 import aelitis.azureus.core.dht.router.DHTRouterContact;
+import gudy.azureus2.core3.util.SimpleTimer;
+import gudy.azureus2.core3.util.TimerEvent;
+import gudy.azureus2.core3.util.TimerEventPerformer;
+import gudy.azureus2.core3.util.TimerEventPeriodic;
 
 public class DHTRouterImpl implements DHTRouter {
 
@@ -17,7 +19,7 @@ public class DHTRouterImpl implements DHTRouter {
 
 	private DHTRouterNodeImpl root;
 
-	private TimerEventPeriodic timerEvent;
+	private TimerEvent periodicEvent;
 	private volatile int seedInTicks;
 
 	private static final int TICK_PERIOD = 10 * 1000;
@@ -29,14 +31,15 @@ public class DHTRouterImpl implements DHTRouter {
 		List<DHTRouterContactImpl> buckets = new ArrayList<>();
 		root = new DHTRouterNodeImpl(this, 0, true, buckets);
 		
-		/*timerEvent = SimpleTimer.addPeriodicEvent(
+		periodicEvent = SimpleTimer.addPeriodicEvent(
 			"DHTRouter:pinger",
 			TICK_PERIOD,
 			new TimerEventPerformer() {
 				public void perform(TimerEvent event) {
+					
 				}
 			}
-		);*/
+		);
 	}
 
 	public List<DHTRouterContact> findClosestContacts(

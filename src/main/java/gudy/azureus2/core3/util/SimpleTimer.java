@@ -1,8 +1,5 @@
 package gudy.azureus2.core3.util;
 
-
-
-
 public class SimpleTimer {
 	
 	protected static final Timer timer;
@@ -24,11 +21,19 @@ public class SimpleTimer {
 		);
 	}
 	
-	public static TimerEventPeriodic addPeriodicEvent(
+	public static TimerEvent addEvent(
+			String				name,
+			long				when,
+			TimerEventPerformer	performer) {
+			TimerEvent res = timer.addEvent(name, SystemTime.getCurrentTime(), when, performer);
+			return (res);
+		}
+	
+	public static TimerEvent addPeriodicEvent(
 			String				name,
 			long				frequency,
 			TimerEventPerformer	performer) {
-		TimerEventPeriodic	res = timer.addPeriodicEvent(name, frequency, performer);
+		TimerEvent res = timer.addPeriodicEvent(name, frequency, performer);
 		return (res);
 	}
 }

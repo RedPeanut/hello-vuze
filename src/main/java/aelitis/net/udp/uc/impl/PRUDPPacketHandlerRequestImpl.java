@@ -22,6 +22,14 @@
 
 package aelitis.net.udp.uc.impl;
 
+import java.net.InetSocketAddress;
+
+import aelitis.net.udp.uc.PRUDPPacket;
+import aelitis.net.udp.uc.PRUDPPacketHandlerException;
+import aelitis.net.udp.uc.PRUDPPacketHandlerRequest;
+import aelitis.net.udp.uc.PRUDPPacketReceiver;
+import gudy.azureus2.core3.util.AEMonitor;
+
 /**
  * @author parg
  *
@@ -30,18 +38,10 @@ package aelitis.net.udp.uc.impl;
 import gudy.azureus2.core3.util.AESemaphore;
 import gudy.azureus2.core3.util.SystemTime;
 
-import java.net.InetSocketAddress;
-
-import aelitis.net.udp.uc.PRUDPPacket;
-import aelitis.net.udp.uc.PRUDPPacketHandlerException;
-import aelitis.net.udp.uc.PRUDPPacketHandlerRequest;
-import aelitis.net.udp.uc.PRUDPPacketReceiver;
-
-public class
-PRUDPPacketHandlerRequestImpl
-	implements PRUDPPacketHandlerRequest
-{
-	private AESemaphore		sem = new AESemaphore("PRUDPPacketHandlerRequest");
+public class PRUDPPacketHandlerRequestImpl
+	implements PRUDPPacketHandlerRequest {
+	
+	private AEMonitor monitor = new AEMonitor("PRUDPPacketHandlerRequest");
 
 	private long						timeout;
 	private PRUDPPacketReceiver			receiver;
@@ -88,67 +88,51 @@ PRUDPPacketHandlerRequestImpl
 		return (res);
 	}
 
-	protected void
-	setReply(
-		PRUDPPacket			packet,
-		InetSocketAddress	originator,
-		long				receive_time) {
+	protected void setReply(
+			PRUDPPacket packet, 
+			InetSocketAddress originator, 
+			long receiveTime) {
 		if (reply == null) {
-
-			reply_time	= receive_time;
-
-			reply	= packet;
-
+			reply_time = receiveTime;
+			reply = packet;
 		} else {
-
 			packet.setPreviousPacket(reply);
-
-			reply	= packet;
+			reply = packet;
 		}
-
 		if (!packet.hasContinuation()) {
-
-			sem.release();
+			//sem.release();
+			monitor.exit();
 		}
-
 		if (receiver != null) {
-
 			receiver.packetReceived(this, packet, originator);
 		}
 	}
 
-	protected void
-	setException(
-		PRUDPPacketHandlerException	e) {
-			// don't override existing reply for synchronous callers as they can
-			// do what they want with it
+	protected void setException(PRUDPPacketHandlerException e) {
+		// don't override existing reply for synchronous callers as they can
+		// do what they want with it
 		if (reply == null) {
 			reply_time	= SystemTime.getCurrentTime();
 			exception	= e;
 		}
-		sem.release();
-			// still report errors to asyn clients (even when a reply has been received)
-			// as they need something to indicate that a continuation packet wasn't received
-			// and that the request has timed-out. ie. a multi-packet reply must terminate
-			// either with the reception of a non-continuation (i.e. last) packet *or* a
-			// timeout/error
+		//sem.release();
+		monitor.exit();
+		// still report errors to asyn clients (even when a reply has been received)
+		// as they need something to indicate that a continuation packet wasn't received
+		// and that the request has timed-out. ie. a multi-packet reply must terminate
+		// either with the reception of a non-continuation (i.e. last) packet *or* a
+		// timeout/error
 		if (receiver != null) {
 			receiver.error(e);
 		}
 	}
 
-	protected PRUDPPacket
-	getReply()
-
-		throws PRUDPPacketHandlerException
-	{
-		sem.reserve();
-
+	protected PRUDPPacket getReply() throws PRUDPPacketHandlerException {
+		//sem.reserve();
+		monitor.enter();
 		if (exception != null) {
-
-			throw(exception);
+			throw (exception);
 		}
-
 		return (reply);
 	}
 }

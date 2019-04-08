@@ -1,9 +1,8 @@
 package gudy.azureus2.core3.util;
 
-
-
-
-public class TimerEvent extends ThreadPoolTask {
+public class TimerEvent 
+	extends ThreadPoolTask 
+	implements 	Comparable<TimerEvent> {
 	
 	private final Timer					timer;
 	private final long					created;
@@ -20,13 +19,12 @@ public class TimerEvent extends ThreadPoolTask {
 			long					_created,
 			long					_when,
 			TimerEventPerformer		_performer) {
-			
-			timer		= _timer;
-			uniqueId	= _uniqueId;
-			when		= _when;
-			//absolute	= _absolute;
-			performer	= _performer;
-			created 	= _created;
+		timer		= _timer;
+		uniqueId	= _uniqueId;
+		when		= _when;
+		//absolute	= _absolute;
+		performer	= _performer;
+		created 	= _created;
 	}
 	
 	@Override
@@ -41,6 +39,17 @@ public class TimerEvent extends ThreadPoolTask {
 	public Runnable getRunnable() {
 		return this;
 	}
-	
+
+	@Override
+	public int compareTo(TimerEvent other) {
+		long res = when - other.when;
+		if (res == 0) {
+			res = uniqueId - other.uniqueId;
+			if (res == 0) {
+				return (0);
+			}
+		}
+		return res < 0 ? -1 : 1;
+	}
 
 }
