@@ -82,9 +82,9 @@ public class BDecoder {
 								+ ": skipping key starting with " + new String(key.substring(0, 128));
 						System.err.println(msg);
 					} else {
-	  					if (map.put(key, value) != null) {
-	  						Debug.out("BDecoder: key '" + key + "' already exists!");
-	  					}
+						if (map.put(key, value) != null) {
+							Debug.out("BDecoder: key '" + key + "' already exists!");
+						}
 					}
 				}
 				
