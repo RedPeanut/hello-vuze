@@ -2,6 +2,7 @@ package aelitis.azureus.core.dht.control.impl;
 
 import aelitis.azureus.core.dht.router.DHTRouter;
 import aelitis.azureus.core.dht.router.DHTRouterFactory;
+import gudy.azureus2.core3.util.ThreadPool;
 import gudy.azureus2.core3.util.ThreadPoolTask;
 
 public class DHTControlImpl implements DHTControl {
@@ -10,10 +11,26 @@ public class DHTControlImpl implements DHTControl {
 	private final int B;
 	private DHTRouter router;
 
+	public  static final int EXTERNAL_LOOKUP_CONCURRENCY	= 16;
+	private static final int EXTERNAL_PUT_CONCURRENCY		= 8;
+	
+	final ThreadPool internalLookupPool;
+	final ThreadPool externalLookupPool;
+	final ThreadPool internalPutPool;
+	private final ThreadPool externalPutPool;
+	
 	public DHTControlImpl(DHTRouter _router, int _K, int _B) {
 		K = _K;
 		B = _B;
 		router = _router;
+		
+		int lookupConcurrency = DHTControl.LOOKUP_CONCURRENCY_DEFAULT;
+		internalLookupPool = new ThreadPool("DHTControl:internallookups", lookupConcurrency);
+		internalPutPool = new ThreadPool("DHTControl:internalputs", lookupConcurrency);
+
+		// external pools queue when full (as opposed to blocking)
+		externalLookupPool = new ThreadPool("DHTControl:externallookups", EXTERNAL_LOOKUP_CONCURRENCY);
+		externalPutPool = new ThreadPool("DHTControl:puts", EXTERNAL_PUT_CONCURRENCY);
 	}
 	
 	protected void createRouter() {
