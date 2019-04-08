@@ -10,7 +10,7 @@ public class TimerEvent extends ThreadPoolTask {
 	private long						when;
 	private final TimerEventPerformer	performer;
 	
-	private final boolean	absolute;
+	//private final boolean	absolute;
 	
 	private long			uniqueId	= 1;
 	
@@ -19,22 +19,21 @@ public class TimerEvent extends ThreadPoolTask {
 			long					_uniqueId,
 			long					_created,
 			long					_when,
-			boolean					_absolute,
 			TimerEventPerformer		_performer) {
 			
 			timer		= _timer;
 			uniqueId	= _uniqueId;
 			when		= _when;
-			absolute	= _absolute;
+			//absolute	= _absolute;
 			performer	= _performer;
 			created 	= _created;
 	}
 	
 	@Override
-	public void run() {
+	public void runSupport() {
 		performer.perform(this);
 	}
-
+	
 	public long getWhen() {
 		return when;
 	}
@@ -42,5 +41,6 @@ public class TimerEvent extends ThreadPoolTask {
 	public Runnable getRunnable() {
 		return this;
 	}
+	
 
 }

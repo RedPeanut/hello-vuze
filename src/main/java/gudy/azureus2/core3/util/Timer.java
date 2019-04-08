@@ -11,6 +11,8 @@ public class Timer implements Runnable {
 	private ThreadPool	threadPool;
 	private Set<TimerEvent>	events = new TreeSet<TimerEvent>();
 	
+	private long	uniqueIdNext	= 0;
+	
 	public Timer(String	name, int threadPoolSize) {
 		
 		threadPool = new ThreadPool(name, threadPoolSize);
@@ -21,6 +23,18 @@ public class Timer implements Runnable {
 		t.start();
 	}
 
+	public synchronized TimerEvent addEvent(
+			String				name,
+			long				creationTime,
+			long				when,
+			TimerEventPerformer	performer) {
+			
+		TimerEvent event = new TimerEvent(this, uniqueIdNext++, creationTime, when, performer);
+		events.add(event);
+
+		return (event);
+	}
+	
 	public TimerEventPeriodic addPeriodicEvent(
 			String name,
 			long frequency,
@@ -51,5 +65,5 @@ public class Timer implements Runnable {
 			}
 		}
 	}
-	
+
 }
