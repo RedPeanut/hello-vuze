@@ -1,4 +1,4 @@
-package hello.main;
+package hello.run;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FormLayout;
@@ -38,10 +38,10 @@ public class RunDHT {
 		display.dispose();
 	}
 	
-	//Composite panel;
+	Composite panel;
 	
 	private void initialize(Composite parent) {
-		//panel = new Composite(parent,SWT.NULL);
+		panel = new Composite(parent,SWT.NULL);
 	}
 
 	private void refresh() {

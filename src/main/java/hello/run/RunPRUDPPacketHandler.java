@@ -1,4 +1,4 @@
-package hello.main;
+package hello.run;
 
 import java.io.DataOutputStream;
 import java.io.IOException;

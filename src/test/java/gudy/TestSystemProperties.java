@@ -1,4 +1,4 @@
-package gudy.azureus2.core3;
+package gudy;
 
 import org.junit.Test;
 
