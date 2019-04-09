@@ -1,4 +1,4 @@
-package hello.main;
+package hello.run;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
@@ -18,13 +18,13 @@ import gudy.azureus2.core3.util.SystemProperties;
 import hello.util.AzSettings;
 import hello.util.Log;
 
-public class SashView {
+public class RunSashView {
 	
-	private static String TAG = SashView.class.getSimpleName();
+	private static String TAG = RunSashView.class.getSimpleName();
 	
 	public static void main(String[] args) {
 		try {
-			new SashView().exec(args);
+			new RunSashView().exec(args);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -1,4 +1,4 @@
-package hello.main;
+package hello.run;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
@@ -17,16 +17,18 @@ import gudy.azureus2.ui.swt.Utils;
 import gudy.azureus2.ui.swt.components.graphics.SpeedGraphic;
 import gudy.azureus2.ui.swt.mainwindow.Colors;
 
-public class DHTView {
+public class RunDHTView {
+	
 	public static void main(String[] args) {
 		try {
-			new DHTView().exec(args);
+			new RunDHTView().exec(args);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
 	private void exec(String[] args) {
+		
 		Display display = new Display();
 		
 		Shell shell = new Shell(display);
@@ -50,8 +52,6 @@ public class DHTView {
 		
 		shell.open();
 		
-		
-		//shell.layout();
 		//shell.layout();
 		//shell.setLayoutDeferred(false);
 		//shell.setRedraw(true);

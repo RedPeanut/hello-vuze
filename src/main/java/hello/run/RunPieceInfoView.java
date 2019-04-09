@@ -1,4 +1,4 @@
-package hello.main;
+package hello.run;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -22,11 +22,11 @@ import org.eclipse.swt.widgets.Shell;
 import gudy.azureus2.ui.swt.Utils;
 import gudy.azureus2.ui.swt.mainwindow.Colors;
 
-public class PieceInfoView {
+public class RunPieceInfoView {
 	
 	public static void main(String[] args) {
 		try {
-			new PieceInfoView().exec(args);
+			new RunPieceInfoView().exec(args);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -73,7 +73,7 @@ public class PieceInfoView {
 	private Font font = null;
 	Image img = null;
 	
-	private PieceInfoView() {}
+	private RunPieceInfoView() {}
 	
 	private void initialize(Composite parent) {
 		

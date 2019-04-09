@@ -29,8 +29,8 @@ public class DHTControlImpl implements DHTControl {
 		internalPutPool = new ThreadPool("DHTControl:internalputs", lookupConcurrency);
 
 		// external pools queue when full (as opposed to blocking)
-		externalLookupPool = new ThreadPool("DHTControl:externallookups", EXTERNAL_LOOKUP_CONCURRENCY);
-		externalPutPool = new ThreadPool("DHTControl:puts", EXTERNAL_PUT_CONCURRENCY);
+		externalLookupPool = new ThreadPool("DHTControl:externallookups", EXTERNAL_LOOKUP_CONCURRENCY, ThreadPool.MODE_NONBLOCKING);
+		externalPutPool = new ThreadPool("DHTControl:puts", EXTERNAL_PUT_CONCURRENCY, ThreadPool.MODE_NONBLOCKING);
 	}
 	
 	protected void createRouter() {
