@@ -1,5 +1,9 @@
 package aelitis.azureus.core.dht.control.impl;
 
+import java.util.Set;
+
+import com.aelitis.azureus.core.dht.transport.DHTTransport;
+
 import aelitis.azureus.core.dht.router.DHTRouter;
 import aelitis.azureus.core.dht.router.DHTRouterFactory;
 import gudy.azureus2.core3.util.ThreadPool;
@@ -19,7 +23,14 @@ public class DHTControlImpl implements DHTControl {
 	final ThreadPool internalPutPool;
 	private final ThreadPool externalPutPool;
 	
-	public DHTControlImpl(DHTRouter _router, int _K, int _B) {
+	public DHTControlImpl(
+			DHTRouter _router, 
+			DHTTransport _transport,
+			int _K, 
+			int _B) {
+		
+		transport = _transport;
+		
 		K = _K;
 		B = _B;
 		router = _router;
@@ -31,21 +42,52 @@ public class DHTControlImpl implements DHTControl {
 		// external pools queue when full (as opposed to blocking)
 		externalLookupPool = new ThreadPool("DHTControl:externallookups", EXTERNAL_LOOKUP_CONCURRENCY, ThreadPool.MODE_NONBLOCKING);
 		externalPutPool = new ThreadPool("DHTControl:puts", EXTERNAL_PUT_CONCURRENCY, ThreadPool.MODE_NONBLOCKING);
+		
+		createRouter(transport.getLocalContact());
+		
 	}
 	
 	protected void createRouter() {
 		router = DHTRouterFactory.create(K, B);
 	}
 	
-	protected DhtTask lookup() {
+	protected DhtTask lookup(
+			final ThreadPool threadPool, 
+			final byte[] _lookupId, 
+			final boolean valueSearch
+	) {
+		
+		final byte[] lookupId;
+		lookupId = _lookupId;
 		
 		DhtTask	task = new DhtTask() {
-
+			
+			Set<DHTTransportContact> contactsToQuery;
+			
+			private boolean cancelled;
+			
 			@Override
 			public void runSupport() {
+				startLookup();
 			}
 			
+			private void startLookup() {
+				contactsToQuery = getClosestContactsSet(lookupId, K);
+				lookupSteps();
+			}
+			
+			// individual lookup steps
+			private void lookupSteps() {
+				while (!cancelled) {
+					if (valueSearch) {
+						
+					} else {
+						
+					}
+				}
+			}
 		};
+		threadPool.run(task);
 		return task;
 	}
 	
@@ -53,6 +95,13 @@ public class DHTControlImpl implements DHTControl {
 		//protected DhtTask(ThreadPool threadPool) {}
 	}
 	
+	protected Set<DHTTransportContact> getClosestContactsSet(
+			byte[]		id,
+			int			numToReturn) {
+		
+		return null;
+	}
+
 	// 
 	
 	public int computeAndCompareDistances(byte[] t1, byte[] t2, byte[] pivot) {
