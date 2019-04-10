@@ -18,7 +18,6 @@ public class DHTControlImpl implements DHTControl {
 	final int K;
 	private final int B;
 	
-
 	public  static final int EXTERNAL_LOOKUP_CONCURRENCY	= 16;
 	private static final int EXTERNAL_PUT_CONCURRENCY		= 8;
 	

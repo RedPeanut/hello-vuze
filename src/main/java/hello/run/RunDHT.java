@@ -6,6 +6,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
+import aelitis.azureus.plugins.dht.DHTPlugin;
+
 public class RunDHT {
 	
 	public static void main(String[] args) {
@@ -23,7 +25,8 @@ public class RunDHT {
 		shell.setText("Hello, world!");
 		
 		shell.setLayout(new FormLayout());
-		initialize(shell);
+		initUI(shell);
+		initCore();
 		shell.pack();
 		refresh();
 		shell.open();
@@ -40,10 +43,16 @@ public class RunDHT {
 	
 	Composite panel;
 	
-	private void initialize(Composite parent) {
+	private void initUI(Composite parent) {
 		panel = new Composite(parent,SWT.NULL);
 	}
 
 	private void refresh() {
+	}
+	
+	private void initCore() {
+		DHTPlugin p = new DHTPlugin();
+		p.initialize();
+		p.initComplete();
 	}
 }

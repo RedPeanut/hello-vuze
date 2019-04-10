@@ -10,6 +10,8 @@ public class DHTTransportUDPContactImpl implements DHTTransportContact {
 
 	private InetSocketAddress externalAddress;
 	private InetSocketAddress transportAddress;
+
+	private byte protocolVersion;
 	
 	private byte[] id;
 	
@@ -24,7 +26,8 @@ public class DHTTransportUDPContactImpl implements DHTTransportContact {
 		
 		transportAddress = _transportAddress;
 		externalAddress = _externalAddress;
-
+		protocolVersion = _protocolVersion;
+		
 		if (	   transportAddress == externalAddress 
 				|| transportAddress.getAddress().equals(externalAddress.getAddress())
 		) {

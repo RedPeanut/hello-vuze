@@ -2,13 +2,15 @@ package aelitis.azureus.core.dht.router.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import aelitis.azureus.core.dht.router.DHTRouter;
 import aelitis.azureus.core.dht.router.DHTRouterContact;
 import gudy.azureus2.core3.util.SimpleTimer;
+import gudy.azureus2.core3.util.SystemTime;
 import gudy.azureus2.core3.util.TimerEvent;
 import gudy.azureus2.core3.util.TimerEventPerformer;
-import gudy.azureus2.core3.util.TimerEventPeriodic;
+import hello.util.Log;
 
 public class DHTRouterImpl implements DHTRouter {
 
@@ -21,12 +23,17 @@ public class DHTRouterImpl implements DHTRouter {
 
 	private DHTRouterNodeImpl root;
 
+	private static long randomSeed = SystemTime.getCurrentTime();
+	private Random random;
+	
 	private TimerEvent periodicEvent;
 	private volatile int seedInTicks;
 
 	private static final int TICK_PERIOD = 10 * 1000;
 	
 	public DHTRouterImpl(int _K, int _B, byte[] _routerNodeId) {
+		
+		random = new Random(randomSeed++);
 		
 		K = _K;
 		B = _B;
@@ -41,7 +48,7 @@ public class DHTRouterImpl implements DHTRouter {
 			TICK_PERIOD,
 			new TimerEventPerformer() {
 				public void perform(TimerEvent event) {
-					
+					Log.d(TAG, "perform() is called...");
 				}
 			}
 		);

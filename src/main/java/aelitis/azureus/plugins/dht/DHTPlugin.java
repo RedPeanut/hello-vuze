@@ -16,7 +16,7 @@ public class DHTPlugin {
 		Log.d(TAG, ">>> dhtDataPort = " + dhtDataPort);
 	}
 	
-	protected void initComplete() {
+	public void initComplete() {
 		Thread t = new Thread("DhtPlugin.init") {
 			@Override
 			public void run() {
