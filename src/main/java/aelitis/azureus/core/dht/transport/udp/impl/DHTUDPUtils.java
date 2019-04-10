@@ -64,4 +64,17 @@ public class DHTUDPUtils {
 			os.writeInt(len);
 		}
 	}
+
+	public static byte[] getNodeID(InetSocketAddress address) {
+		final String key;
+		InetAddress ia = address.getAddress();
+		
+		if (ia == null) {
+			
+		} else {
+			
+		}
+		
+		return null;
+	}
 }

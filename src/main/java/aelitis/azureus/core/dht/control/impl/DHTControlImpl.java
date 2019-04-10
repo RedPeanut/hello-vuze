@@ -1,19 +1,23 @@
 package aelitis.azureus.core.dht.control.impl;
 
-import java.util.Set;
-
-import com.aelitis.azureus.core.dht.transport.DHTTransport;
-
-import aelitis.azureus.core.dht.router.DHTRouter;
-import aelitis.azureus.core.dht.router.DHTRouterFactory;
 import gudy.azureus2.core3.util.ThreadPool;
 import gudy.azureus2.core3.util.ThreadPoolTask;
 
+import java.util.Set;
+
+import aelitis.azureus.core.dht.router.DHTRouter;
+import aelitis.azureus.core.dht.router.DHTRouterFactory;
+import aelitis.azureus.core.dht.transport.DHTTransport;
+
 public class DHTControlImpl implements DHTControl {
+	
+	private final DHTTransport transport;
+	private DHTRouter router;
+	DHTTransportContact localContact;
 	
 	final int K;
 	private final int B;
-	private DHTRouter router;
+	
 
 	public  static final int EXTERNAL_LOOKUP_CONCURRENCY	= 16;
 	private static final int EXTERNAL_PUT_CONCURRENCY		= 8;
@@ -24,7 +28,6 @@ public class DHTControlImpl implements DHTControl {
 	private final ThreadPool externalPutPool;
 	
 	public DHTControlImpl(
-			DHTRouter _router, 
 			DHTTransport _transport,
 			int _K, 
 			int _B) {
@@ -33,7 +36,6 @@ public class DHTControlImpl implements DHTControl {
 		
 		K = _K;
 		B = _B;
-		router = _router;
 		
 		int lookupConcurrency = DHTControl.LOOKUP_CONCURRENCY_DEFAULT;
 		internalLookupPool = new ThreadPool("DHTControl:internallookups", lookupConcurrency);
@@ -47,8 +49,12 @@ public class DHTControlImpl implements DHTControl {
 		
 	}
 	
-	protected void createRouter() {
-		router = DHTRouterFactory.create(K, B);
+	protected void createRouter(DHTTransportContact _localContact) {
+		localContact = _localContact;
+		router = DHTRouterFactory.create(
+				K, B,
+				localContact.getID()
+		);
 	}
 	
 	protected DhtTask lookup(

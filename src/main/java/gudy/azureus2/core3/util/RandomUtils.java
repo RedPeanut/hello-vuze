@@ -44,9 +44,9 @@ public class RandomUtils {
 				min_port = max_port;
 			
 			// DON'T use NetworkManager methods to get the ports here else startup can hang
-			//int	existing_tcp	= COConfigurationManager.getIntParameter("TCP.Listen.Port");
-			//int existing_udp	= COConfigurationManager.getIntParameter("UDP.Listen.Port");
-			//int existing_udp2	= COConfigurationManager.getIntParameter("UDP.NonData.Listen.Port");
+			//int existingTcp	= COConfigurationManager.getIntParameter("TCP.Listen.Port");
+			//int existingUdp	= COConfigurationManager.getIntParameter("UDP.Listen.Port");
+			//int existingUdp2	= COConfigurationManager.getIntParameter("UDP.NonData.Listen.Port");
 			int port = min_port;
 			for (int i=0;i<100;i++) {
 				int min 	= min_port;

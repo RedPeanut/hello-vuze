@@ -5,8 +5,16 @@ import aelitis.azureus.core.dht.transport.udp.impl.DHTTransportUDPImpl;
 
 public class DHTTransportFactory {
 
-	public static DHTTransportUDP createUDP() {
-		return new DHTTransportUDPImpl();
+	public static DHTTransportUDP createUDP(
+			byte			protocolVersion,
+			String			defaultIp,
+			int				port
+	) {
+		return new DHTTransportUDPImpl(
+				protocolVersion,
+				defaultIp,
+				port
+		);
 	}
 
 }

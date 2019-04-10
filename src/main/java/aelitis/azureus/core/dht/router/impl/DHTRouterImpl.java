@@ -17,6 +17,8 @@ public class DHTRouterImpl implements DHTRouter {
 	private int K;
 	private int B;
 
+	private byte[] routerNodeId;
+
 	private DHTRouterNodeImpl root;
 
 	private TimerEvent periodicEvent;
@@ -24,9 +26,12 @@ public class DHTRouterImpl implements DHTRouter {
 
 	private static final int TICK_PERIOD = 10 * 1000;
 	
-	public DHTRouterImpl(int _K, int _B) {
+	public DHTRouterImpl(int _K, int _B, byte[] _routerNodeId) {
+		
 		K = _K;
 		B = _B;
+		
+		routerNodeId = _routerNodeId;
 		
 		List<DHTRouterContactImpl> buckets = new ArrayList<>();
 		root = new DHTRouterNodeImpl(this, 0, true, buckets);

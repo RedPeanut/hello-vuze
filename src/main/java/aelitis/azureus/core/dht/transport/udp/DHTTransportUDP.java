@@ -1,6 +1,8 @@
 package aelitis.azureus.core.dht.transport.udp;
 
-public interface DHTTransportUDP {
+import aelitis.azureus.core.dht.transport.DHTTransport;
+
+public interface DHTTransportUDP extends DHTTransport {
 	
 	public static final byte PROTOCOL_VERSION_2304					= 8;
 	public static final byte PROTOCOL_VERSION_2306					= 12;
