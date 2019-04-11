@@ -1,5 +1,7 @@
 package aelitis.azureus.core.dht.transport.udp;
 
+import java.net.InetSocketAddress;
+
 import aelitis.azureus.core.dht.transport.DHTTransport;
 
 public interface DHTTransportUDP extends DHTTransport {
@@ -93,4 +95,9 @@ public interface DHTTransportUDP extends DHTTransport {
 	public static final byte VENDOR_ID_NONE			= (byte)0xff;
 
 	public static final byte VENDOR_ID_ME			= VENDOR_ID_AELITIS;
+
+	public DHTTransportUDPContact importContact(
+			InetSocketAddress	_address,
+			byte				_protocol_version,
+			boolean				is_bootstrap);
 }

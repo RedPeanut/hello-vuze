@@ -1,18 +1,21 @@
 package aelitis.azureus.core.dht.control.impl;
 
-import gudy.azureus2.core3.util.ThreadPool;
-import gudy.azureus2.core3.util.ThreadPoolTask;
-
 import java.util.Set;
 
+import aelitis.azureus.core.dht.db.DHTDB;
+import aelitis.azureus.core.dht.db.DHTDBFactory;
 import aelitis.azureus.core.dht.router.DHTRouter;
 import aelitis.azureus.core.dht.router.DHTRouterFactory;
 import aelitis.azureus.core.dht.transport.DHTTransport;
+import aelitis.azureus.core.dht.transport.DHTTransportRequestHandler;
+import gudy.azureus2.core3.util.ThreadPool;
+import gudy.azureus2.core3.util.ThreadPoolTask;
 
 public class DHTControlImpl implements DHTControl {
 	
 	private final DHTTransport transport;
 	private DHTRouter router;
+	final DHTDB database;
 	DHTTransportContact localContact;
 	
 	final int K;
@@ -36,6 +39,8 @@ public class DHTControlImpl implements DHTControl {
 		K = _K;
 		B = _B;
 		
+		database = DHTDBFactory.create();
+		
 		int lookupConcurrency = DHTControl.LOOKUP_CONCURRENCY_DEFAULT;
 		internalLookupPool = new ThreadPool("DHTControl:internallookups", lookupConcurrency);
 		internalPutPool = new ThreadPool("DHTControl:internalputs", lookupConcurrency);
@@ -46,6 +51,12 @@ public class DHTControlImpl implements DHTControl {
 		
 		createRouter(transport.getLocalContact());
 		
+		transport.setRequestHandler(new DHTTransportRequestHandler() {
+			@Override
+			public void contactImported(DHTTransportContact contact, boolean isBootstrap) {
+				//router.contactKnown();
+			}
+		});
 	}
 	
 	protected void createRouter(DHTTransportContact _localContact) {

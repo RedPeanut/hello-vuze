@@ -6,6 +6,7 @@ import java.util.Random;
 
 import aelitis.azureus.core.dht.router.DHTRouter;
 import aelitis.azureus.core.dht.router.DHTRouterContact;
+import aelitis.azureus.core.dht.router.DHTRouterContactAttachment;
 import gudy.azureus2.core3.util.SimpleTimer;
 import gudy.azureus2.core3.util.SystemTime;
 import gudy.azureus2.core3.util.TimerEvent;
@@ -97,5 +98,47 @@ public class DHTRouterImpl implements DHTRouter {
 				findClosestContacts(nodeId, numToReturn, depth+1, worseNode, liveOnly, res);
 			}
 		}
+	}
+
+	@Override
+	public void contactKnown(
+			byte[]						nodeId,
+			DHTRouterContactAttachment	attachment,
+			boolean						force) {
+		addContact(nodeId, attachment, false);
+	}
+	
+	public void	addContact(
+			byte[]						nodeId,
+			DHTRouterContactAttachment	attachment,
+			boolean						knownToBeAlive) {
+		addContactSupport(nodeId, attachment, knownToBeAlive);
+	}
+	
+	private DHTRouterContact addContactSupport(
+			byte[]						nodeId,
+			DHTRouterContactAttachment	attachment,
+			boolean						knownToBeAlive) {
+		DHTRouterNodeImpl currentNode = root;
+		
+		for (int i=0;i<nodeId.length;i++) {
+			byte b = nodeId[i];
+			int j = 7;
+			while (j >= 0) {
+				boolean	bit = ((b>>j)&0x01)==1?true:false;
+				DHTRouterNodeImpl nextNode;
+				if (bit) {
+					nextNode = currentNode.getLeft();
+				} else {
+					nextNode = currentNode.getRight();
+				}
+				
+				if (nextNode == null) {
+					
+				}
+			}
+		}
+		
+		return null;
 	}
 }

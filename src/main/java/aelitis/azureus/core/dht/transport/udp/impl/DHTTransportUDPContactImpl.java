@@ -2,11 +2,11 @@ package aelitis.azureus.core.dht.transport.udp.impl;
 
 import java.net.InetSocketAddress;
 
-import aelitis.azureus.core.dht.control.impl.DHTTransportContact;
 import aelitis.azureus.core.dht.netcoords.DHTNetworkPosition;
 import aelitis.azureus.core.dht.netcoords.DHTNetworkPositionManager;
+import aelitis.azureus.core.dht.transport.udp.DHTTransportUDPContact;
 
-public class DHTTransportUDPContactImpl implements DHTTransportContact {
+public class DHTTransportUDPContactImpl implements DHTTransportUDPContact {
 
 	private InetSocketAddress externalAddress;
 	private InetSocketAddress transportAddress;
