@@ -8,8 +8,6 @@ public class Constants {
 	
 	private static String TAG = Constants.class.getSimpleName();
 	
-	
-	
 	public static final String DEFAULT_ENCODING 	= "UTF8";
 	public static final String BYTE_ENCODING 		= "ISO-8859-1";
 	public static final Charset	DEFAULT_CHARSET;

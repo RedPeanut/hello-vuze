@@ -7,5 +7,8 @@ public class SystemTime {
 	public static long getCurrentTime() {
 		return System.currentTimeMillis();
 	}
-
+	
+	public static long getMonotonousTime() {
+		return System.currentTimeMillis();
+	}
 }
