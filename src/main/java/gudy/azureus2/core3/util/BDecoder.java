@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.CharsetDecoder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 public class BDecoder {
@@ -22,24 +23,33 @@ public class BDecoder {
 		return (Map<String, Object>) decodeInputStream(data, "", 0);
 	}
 
-	private Object decodeInputStream(InputStream is, String context, int nesting) throws Exception {
-		is.mark(1);
-		int read = is.read();
+	private Object decodeInputStream(InputStream dbis, String context, int nesting) 
+			throws IOException {
+		
+		if (!dbis.markSupported()) {
+			throw new IOException("InputStream must support the mark() method");
+		}
+		
+		dbis.mark(1);
+		int read = dbis.read();
+		
+		//decide what to do
 		switch (read) {
 			case 'd': {
 				//create a new dictionary object
-				LightHashMap map = new LightHashMap();
+				Map map = new HashMap();
 
 				byte[] prevKey = null;
 				//get the key
 				while (true) {
-					is.mark(1);
-					read = is.read();
+					dbis.mark(1);
+					read = dbis.read();
 					if (read == 'e' || read == -1)
 						break; // end of map
-					is.reset();
+					dbis.reset();
+					
 					// decode key strings manually so we can reuse the bytebuffer
-					int keyLength = (int)getPositiveNumberFromStream(is, ':');
+					int keyLength = (int)getPositiveNumberFromStream(dbis, ':');
 					int skipBytes = 0;
 					if (keyLength > MAX_MAP_KEY_SIZE) {
 						skipBytes = keyLength - MAX_MAP_KEY_SIZE;
@@ -54,9 +64,9 @@ public class BDecoder {
 						keyBytesBuffer = ByteBuffer.allocate(keyLength);
 						keyCharsBuffer = CharBuffer.allocate(keyLength);
 					}
-					getByteArrayFromStream(is, keyLength, keyBytesBuffer.array());
+					getByteArrayFromStream(dbis, keyLength, keyBytesBuffer.array());
 					if (skipBytes > 0) {
-						is.skip(skipBytes);
+						dbis.skip(skipBytes);
 					}
 					
 					keyDecoder.reset();
@@ -64,8 +74,10 @@ public class BDecoder {
 					keyDecoder.flush(keyCharsBuffer);
 					String key = new String(keyCharsBuffer.array(),0,keyCharsBuffer.limit());
 
+					
+					
 					//decode value
-					Object value = decodeInputStream(is,key,nesting+1);
+					Object value = decodeInputStream(dbis,key,nesting+1);
 					
 					// recover from some borked encodings that I have seen whereby the value has
 					// not been encoded. This results in, for example,
@@ -88,9 +100,9 @@ public class BDecoder {
 					}
 				}
 				
-				is.mark(1);
-				read = is.read();
-				is.reset();
+				dbis.mark(1);
+				read = dbis.read();
+				dbis.reset();
 				if (nesting > 0 && read == -1) {
 					throw (new BEncodingException("BDecoder: invalid input data, 'e' missing from end of dictionary"));
 				}
@@ -102,15 +114,15 @@ public class BDecoder {
 				//create the list
 				ArrayList list = new ArrayList();
 
-				Object tempElement = null;
-				while ((tempElement = decodeInputStream(is, context, nesting+1)) != null) {
+				Object e = null;
+				while ((e = decodeInputStream(dbis, context, nesting+1)) != null) {
 					//add the element
-					list.add(tempElement);
+					list.add(e);
 				}
 				list.trimToSize();
-				is.mark(1);
-				read = is.read();
-				is.reset();
+				dbis.mark(1);
+				read = dbis.read();
+				dbis.reset();
 				if (nesting > 0 && read == -1) {
 					throw (new BEncodingException("BDecoder: invalid input data, 'e' missing from end of list"));
 				}
@@ -121,7 +133,7 @@ public class BDecoder {
 			case -1:
 				return null;
 			case 'i':
-				return Long.valueOf(getNumberFromStream(is, 'e'));
+				return Long.valueOf(getNumberFromStream(dbis, 'e'));
 			case '0':
 			case '1':
 			case '2':
@@ -133,16 +145,16 @@ public class BDecoder {
 			case '8':
 			case '9':
 				//move back one
-				is.reset();
+				dbis.reset();
 				//get the string
-				return getByteArrayFromStream(is, context);
+				return getByteArrayFromStream(dbis, context);
 			default: {
-				int	remLen = is.available();
+				int	remLen = dbis.available();
 				if (remLen > 256) {
 					remLen = 256;
 				}
 				byte[] remData = new byte[remLen];
-				is.read(remData);
+				dbis.read(remData);
 				throw (new BEncodingException(
 						"BDecoder: unknown command '" + read + ", remainder = " + new String(remData)));
 			}
@@ -169,4 +181,12 @@ public class BDecoder {
 		return 0;
 	}
 	
+	private static class BDecoderInputStreamArray extends InputStream {
+
+		@Override
+		public int read() throws IOException {
+			return 0;
+		}
+		
+	}
 }

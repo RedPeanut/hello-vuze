@@ -7,7 +7,6 @@ public class LightHashMap<S,T> extends AbstractMap<S,T> implements Cloneable {
 
 	@Override
 	public Set<java.util.Map.Entry<S, T>> entrySet() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
