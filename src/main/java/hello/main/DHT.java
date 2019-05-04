@@ -1,4 +1,4 @@
-package hello.run;
+package hello.main;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FormLayout;
@@ -8,11 +8,11 @@ import org.eclipse.swt.widgets.Shell;
 
 import aelitis.azureus.plugins.dht.DHTPlugin;
 
-public class RunDHT {
+public class DHT {
 	
 	public static void main(String[] args) {
 		try {
-			new RunDHT().exec(args);
+			new DHT().exec(args);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -1,4 +1,4 @@
-package hello.run;
+package hello.main;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -18,23 +18,22 @@ import aelitis.net.udp.uc.PRUDPPacketHandlerException;
 import aelitis.net.udp.uc.PRUDPPacketHandlerRequest;
 import aelitis.net.udp.uc.PRUDPPacketReceiver;
 import aelitis.net.udp.uc.PRUDPPacketRequest;
-import aelitis.net.udp.uc.impl.PRUDPPacketHandler;
 import aelitis.net.udp.uc.impl.PRUDPPacketHandlerImpl;
 import gudy.azureus2.core3.util.RandomUtils;
 
-public class RunPRUDPPacketHandler {
+public class PRUDPPacketHandler {
 	
 	private Random random;
 	
 	public static void main(String[] args) {
 		try {
-			new RunPRUDPPacketHandler().exec(args);
+			new PRUDPPacketHandler().exec(args);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
-	protected RunPRUDPPacketHandler() {
+	protected PRUDPPacketHandler() {
 		random = RandomUtils.SECURE_RANDOM;
 	}
 	
@@ -113,7 +112,7 @@ public class RunPRUDPPacketHandler {
 								}
 							},					// PRUDPPacketReceiver		receiver,
 							10000,				// udp timeout 
-							PRUDPPacketHandler.PRIORITY_MEDIUM	// int		priority
+							aelitis.net.udp.uc.impl.PRUDPPacketHandler.PRIORITY_MEDIUM	// int		priority
 						);
 					} catch (PRUDPPacketHandlerException e) {
 						e.printStackTrace();

@@ -1,16 +1,17 @@
-package hello.run;
+package hello.main;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FormLayout;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
-public class RunBlank {
-	
+public class TransferStatsView {
 	public static void main(String[] args) {
 		try {
-			new RunBlank().exec(args);
+			new TransferStatsView().exec(args);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -22,10 +23,14 @@ public class RunBlank {
 		Shell shell = new Shell(display);
 		shell.setText("Hello, world!");
 		
+		Point minimumSize = shell.getMinimumSize();
+		System.out.println("minimumSize = " + minimumSize);
+		
+		//Composite composite = shell;
 		shell.setLayout(new FormLayout());
 		initialize(shell);
+		//refresh();
 		shell.pack();
-		refresh();
 		shell.open();
 		
 		// Set up the event loop.
@@ -38,12 +43,17 @@ public class RunBlank {
 		display.dispose();
 	}
 	
-	Composite panel;
+	Composite mainPanel;
 	
 	private void initialize(Composite parent) {
-		panel = new Composite(parent,SWT.NULL);
+		mainPanel = new Composite(parent, SWT.NULL);
+		GridLayout mainLayout = new GridLayout();
+		mainPanel.setLayout(mainLayout);
+		
+		
 	}
-
+	
 	private void refresh() {
+		
 	}
 }

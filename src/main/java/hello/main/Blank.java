@@ -1,17 +1,16 @@
-package hello.run;
+package hello.main;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FormLayout;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
-public class RunTransferStatsView {
+public class Blank {
+	
 	public static void main(String[] args) {
 		try {
-			new RunTransferStatsView().exec(args);
+			new Blank().exec(args);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -23,14 +22,10 @@ public class RunTransferStatsView {
 		Shell shell = new Shell(display);
 		shell.setText("Hello, world!");
 		
-		Point minimumSize = shell.getMinimumSize();
-		System.out.println("minimumSize = " + minimumSize);
-		
-		//Composite composite = shell;
 		shell.setLayout(new FormLayout());
 		initialize(shell);
-		//refresh();
 		shell.pack();
+		refresh();
 		shell.open();
 		
 		// Set up the event loop.
@@ -43,17 +38,12 @@ public class RunTransferStatsView {
 		display.dispose();
 	}
 	
-	Composite mainPanel;
+	Composite panel;
 	
 	private void initialize(Composite parent) {
-		mainPanel = new Composite(parent, SWT.NULL);
-		GridLayout mainLayout = new GridLayout();
-		mainPanel.setLayout(mainLayout);
-		
-		
+		panel = new Composite(parent,SWT.NULL);
 	}
-	
+
 	private void refresh() {
-		
 	}
 }
