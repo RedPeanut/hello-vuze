@@ -18,7 +18,7 @@ public class AESemaphore {
 	public boolean reserveIfAvailable() {
 		synchronized(this) {
 			if (count > 0) {
-				reserve();
+				reserve(0);
 				return (true);
 			} else {
 				return (false);
@@ -26,12 +26,16 @@ public class AESemaphore {
 		}
 	}
 	
-	// blocking
 	public void reserve() {
+		reserve(0);
+	}
+	
+	// blocking
+	public int reserve(long millis) {
 		synchronized(this) {
 			if (count == 0) {
 				try {
-					wait();
+					wait(millis);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
@@ -39,8 +43,9 @@ public class AESemaphore {
 				count--;
 			}
 		}
+		return (1);
 	}
-
+	
 	// 
 	public void release() {
 		synchronized(this) {

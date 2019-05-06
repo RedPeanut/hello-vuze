@@ -18,6 +18,10 @@ public class Constants {
 	 	BYTE_CHARSET 	= Charset.forName(Constants.BYTE_ENCODING);;
 	}
 	
+	public static final String	INFINITY_STRING	= "\u221E"; // "oo";pa
+	public static final int		CRAPPY_INFINITY_AS_INT	= 365*24*3600; // seconds (365days)
+	public static final long	CRAPPY_INFINITE_AS_LONG = 10000*365*24*3600; // seconds (10k years)
+	
 	public static final String OSName = System.getProperty("os.name");
 	
 	public static final boolean isOSX			= OSName.toLowerCase().startsWith("mac os");
