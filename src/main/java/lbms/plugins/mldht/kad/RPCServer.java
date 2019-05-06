@@ -5,8 +5,10 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 
-public class RPCServer implements Runnable {
+import lbms.plugins.mldht.kad.messages.MessageBase;
 
+public class RPCServer implements Runnable {
+	
 	private DatagramSocket							sock;
 	private volatile boolean						running;
 	private int										numReceived;
@@ -73,6 +75,11 @@ public class RPCServer implements Runnable {
 	
 	private void handlePacket(DatagramPacket p) {
 		numReceived++;
+		
+	}
+	
+	public void sendMessage(MessageBase msg) {
+		
 	}
 	
 }

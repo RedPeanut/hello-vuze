@@ -20,13 +20,13 @@ import java.util.*;
 
 
 /**
- * A lighter (on memory) hash map<br>
+ * A lighter (on memory) hash set<br>
  *
- * Advantages over HashMap:
+ * Advantages over HashSet:
  * <ul>
  * <li>Lower memory footprint
  * <li>Everything is stored in a single array, this might improve cache performance (not verified)
- * <li>Read-only operations on Key and Value iterators should be concurrency-safe (Entry iterators are not) but they might return null values unexpectedly under concurrent modification (not verified)
+ * <li>Read-only operations on iterators should be concurrency-safe but they might return null values unexpectedly under concurrent modification (not verified)
  * </ul>
  *
  * Disadvantages:
@@ -34,35 +34,33 @@ import java.util.*;
  * <li>removal is implemented with thombstone-keys, this can significantly increase the lookup time if many values are removed. Use compactify() for scrubbing
  * <li>entry set iterators and thus transfers to other maps are slower than compareable implementations
  * <li>the map does not store hashcodes and relies on either the key-objects themselves caching them (such as strings) or a fast computation of hashcodes
- * <li>concurrent modification detection is not as fail-fast as HashMap as no modification counter is used and only structural differences are noted
  * </ul>
  *
  * @author Aaron Grunthal
  * @create 28.11.2007
  */
-public class LightHashMap<S,T> extends AbstractMap<S,T> implements Cloneable {
-	
+public class LightHashSet extends AbstractSet implements Cloneable {
 	private static final Object	THOMBSTONE			= new Object();
 	private static final Object NULLKEY				= new Object();
 	private static final float	DEFAULT_LOAD_FACTOR	= 0.75f;
 	private static final int	DEFAULT_CAPACITY	= 8;
 
-	public LightHashMap() {
+	public LightHashSet() {
 		this(DEFAULT_CAPACITY, DEFAULT_LOAD_FACTOR);
 	}
 
-	public LightHashMap(final int initialCapacity) {
+	public LightHashSet(final int initialCapacity) {
 		this(initialCapacity, DEFAULT_LOAD_FACTOR);
 	}
 
-	public LightHashMap(final Map m) {
+	public LightHashSet(final Collection c) {
 		this(0);
-		if (m instanceof LightHashMap) {
-			final LightHashMap lightMap = (LightHashMap)m;
+		if (c instanceof LightHashSet) {
+			final LightHashSet lightMap = (LightHashSet)c;
 			this.size = lightMap.size;
 			this.data = (Object[])lightMap.data.clone();
 		} else
-			putAll(m);
+			addAll(c);
 	}
 
 	public Object clone() {
@@ -77,28 +75,29 @@ public class LightHashMap<S,T> extends AbstractMap<S,T> implements Cloneable {
 		}
 	}
 
-	public LightHashMap(int initialCapacity, final float loadFactor) {
+	public LightHashSet(int initialCapacity, final float loadFactor) {
 		if (loadFactor > 1)
 			throw new IllegalArgumentException("Load factor must not be > 1");
 		this.loadFactor = loadFactor;
 		int capacity = 1;
 		while (capacity < initialCapacity)
 			capacity <<= 1;
-		data = new Object[capacity*2];
+		data = new Object[capacity];
 	}
 
 	final float	loadFactor;
 	int			size;
 	Object[]	data;
 
-	public Set entrySet() {
-		return new EntrySet();
+
+	public Iterator iterator() {
+		return new HashIterator();
 	}
 
-	private abstract class HashIterator implements Iterator {
-		protected int	nextIdx		= -2;
-		protected int	currentIdx	= -2;
-		protected final Object[] itData = data;
+	private class HashIterator implements Iterator {
+		private int	nextIdx		= -1;
+		private int	currentIdx	= -1;
+		private final Object[] itData = data;
 
 		public HashIterator() {
 			findNext();
@@ -106,17 +105,17 @@ public class LightHashMap<S,T> extends AbstractMap<S,T> implements Cloneable {
 
 		private void findNext() {
 			do
-				nextIdx+=2;
+				nextIdx++;
 			while (nextIdx < itData.length && (itData[nextIdx] == null || itData[nextIdx] == THOMBSTONE));
 		}
 
 		public void remove() {
-			if (currentIdx == -2)
+			if (currentIdx == -1)
 				throw new IllegalStateException("No entry to delete, use next() first");
 			if (itData != data)
 				throw new ConcurrentModificationException("removal opperation not supported as concurrent structural modification occured");
-			LightHashMap.this.removeForIndex(currentIdx);
-			currentIdx = -2;
+			LightHashSet.this.removeForIndex(currentIdx);
+			currentIdx = -1;
 		}
 
 		public boolean hasNext() {
@@ -128,158 +127,78 @@ public class LightHashMap<S,T> extends AbstractMap<S,T> implements Cloneable {
 				throw new IllegalStateException("No more entries");
 			currentIdx = nextIdx;
 			findNext();
-			return nextIntern();
+			final Object key = itData[currentIdx];
+			return key != NULLKEY ? key : null;
 		}
 
-		abstract Object nextIntern();
 	}
 
-	private class EntrySet extends AbstractSet {
-		public Iterator iterator() {
-			return new EntrySetIterator();
-		}
-
-		public int size() {
-			return size;
-		}
-
-		private class EntrySetIterator extends HashIterator {
-			public Object nextIntern() {
-				return new Entry(currentIdx);
-			}
-
-			private final class Entry implements Map.Entry {
-				final int	entryIndex;
-
-				public Entry(final int idx) {
-					entryIndex = idx;
-				}
-
-				public Object getKey() {
-					final Object key = itData[entryIndex];
-					return key != NULLKEY ? key : null;
-				}
-
-				public Object getValue() {
-					return itData[entryIndex+1];
-				}
-
-				public Object setValue(final Object value) {
-					final Object oldValue = itData[entryIndex+1];
-					itData[entryIndex+1] = value;
-					return oldValue;
-				}
-
-				public boolean equals(Object o) {
-					if (!(o instanceof Map.Entry))
-						return false;
-					Map.Entry e = (Map.Entry) o;
-					return (getKey() == null ? e.getKey() == null : getKey().equals(e.getKey())) && (getValue() == null ? e.getValue() == null : getValue().equals(e.getValue()));
-				}
-
-				public int hashCode() {
-					return (getKey() == null ? 0 : getKey().hashCode()) ^ (getValue() == null ? 0 : getValue().hashCode());
-				}
-			}
-		}
-	}
-
-	private class KeySet extends AbstractSet {
-		public Iterator iterator() {
-			return new KeySetIterator();
-		}
-
-		private class KeySetIterator extends HashIterator {
-			Object nextIntern() {
-				final Object key = itData[currentIdx];
-				return key != NULLKEY ? key : null;
-			}
-		}
-
-		public int size() {
-			return size;
-		}
-	}
-
-	private class Values extends AbstractCollection {
-		public Iterator iterator() {
-			return new ValueIterator();
-		}
-
-		private class ValueIterator extends HashIterator {
-			Object nextIntern() {
-				return itData[currentIdx+1];
-			}
-		}
-
-		public int size() {
-			return size;
-		}
-	}
-
-	public T put(final Object key, final Object value) {
+	public boolean add(final Object key) {
 		checkCapacity(1);
-		return (T)add(key, value, false);
+		return addInternal(key, false);
 	}
 
-	public void putAll(final Map m) {
-		checkCapacity(m.size());
-		for (final Iterator it = m.entrySet().iterator(); it.hasNext();) {
-			final Map.Entry entry = (Map.Entry) it.next();
-			add(entry.getKey(), entry.getValue(),true);
+	public int size() {
+		return size;
+	}
+
+	public boolean addAll(final Collection c) {
+		checkCapacity(c.size());
+		boolean changed = false;
+		for (final Iterator it = c.iterator(); it.hasNext();) {
+			changed |= addInternal(it.next(), true);
 		}
 		// compactify in case we overestimated the new size due to redundant entries
 		//compactify(0.f);
-	}
-
-	public Set<S> keySet() {
-		return new KeySet();
-	}
-
-	public Collection<T> values() {
-		return new Values();
+		return changed;
 	}
 
 	public int capacity() {
-		return data.length>>1;
+		return data.length;
 	}
 
-	public T get(Object key) {
+	/**
+	 * Fetches an element which does equal() the provided object but is not necessarily the same object
+	 * @param Object to retrieve
+	 * @return an object fulfilling the equals contract or null if no such object was found in this set
+	 */
+	public Object get(Object key) {
 		if (key == null)
 			key = NULLKEY;
-		return (T)data[nonModifyingFindIndex(key)+1];
-	}
-
-	private Object add(Object key, final Object value, final boolean bulkAdd) {
-		if (key == null)
-			key = NULLKEY;
-		final int idx = bulkAdd ? nonModifyingFindIndex(key) : findIndex(key);
-		final Object oldValue = data[idx+1];
-		if (data[idx] == null || data[idx] == THOMBSTONE) {
-			data[idx] = key;
-			size++;
-		}
-		data[idx+1] = value;
-		return oldValue;
-	}
-
-	public T remove(Object key) {
-		if (size == 0)
-			return null;
-		if (key == null)
-			key = NULLKEY;
-		final int idx = findIndex(key);
+		final int idx = nonModifyingFindIndex(key);
 		if (keysEqual(data[idx], key))
-			return (T)removeForIndex(idx);
+			return data[idx];
 		return null;
 	}
 
-	private Object removeForIndex(final int idx) {
-		final Object oldValue = data[idx+1];
+	private boolean addInternal(Object key, final boolean bulkAdd) {
+		if (key == null)
+			key = NULLKEY;
+		final int idx = bulkAdd ? nonModifyingFindIndex(key) : findIndex(key);
+		if (data[idx] == null || data[idx] == THOMBSTONE) {
+			data[idx] = key;
+			size++;
+			return true;
+		}
+		return false;
+	}
+
+	public boolean remove(Object key) {
+		if (size == 0)
+			return false;
+		if (key == null)
+			key = NULLKEY;
+		final int idx = findIndex(key);
+		if (keysEqual(key, data[idx])) {
+			removeForIndex(idx);
+			return true;
+		}
+		return false;
+	}
+
+	private void removeForIndex(final int idx) {
 		data[idx] = THOMBSTONE;
-		data[idx+1] = null;
 		size--;
-		return oldValue;
 	}
 
 	public void clear() {
@@ -287,10 +206,10 @@ public class LightHashMap<S,T> extends AbstractMap<S,T> implements Cloneable {
 		int capacity = 1;
 		while (capacity < DEFAULT_CAPACITY)
 			capacity <<= 1;
-		data = new Object[capacity*2];
+		data = new Object[capacity];
 	}
 
-	public boolean containsKey(Object key) {
+	public boolean contains(Object key) {
 		if (size == 0)
 			return false;
 		if (key == null)
@@ -298,24 +217,12 @@ public class LightHashMap<S,T> extends AbstractMap<S,T> implements Cloneable {
 		return keysEqual(key, data[nonModifyingFindIndex(key)]);
 	}
 
-	public boolean containsValue(final Object value) {
-		if (value != null) {
-			for (int i = 0; i < data.length; i+=2)
-				if (value.equals(data[i+1]))
-					return true;
-		} else
-			for (int i = 0; i < data.length; i+=2)
-				if (data[i+1] == null && data[i] != null && data[i] != THOMBSTONE)
-					return true;
-		return false;
-	}
-
 	private final boolean keysEqual(final Object o1, final Object o2) {
 		return o1 == o2 || (o1 != null && o2 != null && o1.hashCode() == o2.hashCode() && o1.equals(o2));
 	}
 
 	private int findIndex(final Object keyToFind) {
-		final int hash = keyToFind.hashCode() << 1;
+		final int hash = keyToFind.hashCode();
 		/* hash ^= (hash >>> 20) ^ (hash >>> 12);
 		 * hash ^= (hash >>> 7) ^ (hash >>> 4);
 		 */
@@ -323,7 +230,7 @@ public class LightHashMap<S,T> extends AbstractMap<S,T> implements Cloneable {
 		int newIndex = hash & (data.length - 1);
 		int thombStoneIndex = -1;
 		int thombStoneCount = 0;
-		final int thombStoneThreshold = Math.min((data.length>>1)-size, 100);
+		final int thombStoneThreshold = Math.min(data.length-size, 100);
 		// search until we find a free entry or an entry matching the key to insert
 		while (data[newIndex] != null && !keysEqual(data[newIndex], keyToFind)) {
 			if (data[newIndex] == THOMBSTONE) {
@@ -338,7 +245,7 @@ public class LightHashMap<S,T> extends AbstractMap<S,T> implements Cloneable {
 				}
 			}
 
-			newIndex = (hash + probe + probe * probe) & (data.length - 1);
+			newIndex = (hash + ((probe + probe * probe) >> 1)) & (data.length - 1);
 			probe++;
 		}
 		// if we didn't find an exact match then the first thombstone will do too for insert
@@ -348,7 +255,7 @@ public class LightHashMap<S,T> extends AbstractMap<S,T> implements Cloneable {
 	}
 
 	private int nonModifyingFindIndex(final Object keyToFind) {
-		final int hash = keyToFind.hashCode() << 1;
+		final int hash = keyToFind.hashCode();
 		/* hash ^= (hash >>> 20) ^ (hash >>> 12);
 		 * hash ^= (hash >>> 7) ^ (hash >>> 4);
 		 */
@@ -356,10 +263,10 @@ public class LightHashMap<S,T> extends AbstractMap<S,T> implements Cloneable {
 		int newIndex = hash & (data.length - 1);
 		int thombStoneIndex = -1;
 		// search until we find a free entry or an entry matching the key to insert
-		while (data[newIndex] != null && !keysEqual(data[newIndex], keyToFind) && probe < (data.length>>1)) {
+		while (data[newIndex] != null && !keysEqual(data[newIndex], keyToFind) && probe < data.length) {
 			if (data[newIndex] == THOMBSTONE && thombStoneIndex == -1)
 				thombStoneIndex = newIndex;
-			newIndex = (hash + probe + probe * probe) & (data.length - 1);
+			newIndex = (hash + ((probe + probe * probe) >> 1)) & (data.length - 1);
 			probe++;
 		}
 		if (thombStoneIndex != -1 && !keysEqual(data[newIndex], keyToFind))
@@ -369,7 +276,7 @@ public class LightHashMap<S,T> extends AbstractMap<S,T> implements Cloneable {
 
 
 	private void checkCapacity(final int n) {
-		final int currentCapacity = data.length>>1;
+		final int currentCapacity = data.length;
 		if ((size + n) < currentCapacity * loadFactor)
 			return;
 		int newCapacity = currentCapacity;
@@ -396,98 +303,88 @@ public class LightHashMap<S,T> extends AbstractMap<S,T> implements Cloneable {
 			adjustedLoadFactor = loadFactor;
 		while (newCapacity * adjustedLoadFactor < (size+1))
 			newCapacity <<= 1;
-		if (newCapacity < data.length/2 || compactingLoadFactor >= 0.f )
+		if (newCapacity < data.length || compactingLoadFactor >= 0.f )
 			adjustCapacity(newCapacity);
 	}
 
 	private void adjustCapacity(final int newSize) {
 		final Object[] oldData = data;
-		data = new Object[newSize*2];
+		data = new Object[newSize];
 		size = 0;
-		for (int i = 0; i < oldData.length; i+=2) {
+		for (int i = 0; i < oldData.length; i++) {
 			if (oldData[i] == null || oldData[i] == THOMBSTONE)
 				continue;
-			add(oldData[i], oldData[i+1], true);
+			addInternal(oldData[i], true);
 		}
 	}
 
 	static void test() {
 		final Random rnd = new Random();
 		final byte[] buffer = new byte[5];
-		final String[] fillData = new String[(int)((1<<21) * 0.93f)];
+		final String[] fillData = new String[(int)((1<<20) * 0.93f)];
 		for (int i = 0; i < fillData.length; i++) {
 			rnd.nextBytes(buffer);
 			fillData[i] = new String(buffer);
 			fillData[i].hashCode();
 		}
 		long time;
-		final Map m1 = new HashMap();
-		final Map m2 = new LightHashMap();
+		final Set s1 = new HashSet();
+		final Set s2 = new LightHashSet();
 		System.out.println("fill:");
 		time = System.currentTimeMillis();
-		for (int i = 0; i < fillData.length; i++)
-			m1.put(fillData[i], buffer);
+		Collections.addAll(s1, fillData);
 		System.out.println(System.currentTimeMillis() - time);
 		time = System.currentTimeMillis();
-		for (int i = 0; i < fillData.length; i++)
-			m2.put(fillData[i], buffer);
+		Collections.addAll(s2, fillData);
 		System.out.println(System.currentTimeMillis() - time);
-		
 		System.out.println("replace-fill:");
 		time = System.currentTimeMillis();
-		for (int i = 0; i < fillData.length; i++)
-			m1.put(fillData[i], buffer);
+		Collections.addAll(s1, fillData);
 		System.out.println(System.currentTimeMillis() - time);
 		time = System.currentTimeMillis();
-		for (int i = 0; i < fillData.length; i++)
-			m2.put(fillData[i], buffer);
+		Collections.addAll(s2, fillData);
 		System.out.println(System.currentTimeMillis() - time);
-		
 		System.out.println("get:");
 		time = System.currentTimeMillis();
 		for (int i = 0; i < fillData.length; i++)
-			m1.get(fillData[i]);
+			s1.contains(fillData[i]);
 		System.out.println(System.currentTimeMillis() - time);
 		time = System.currentTimeMillis();
 		for (int i = 0; i < fillData.length; i++)
-			m2.get(fillData[i]);
+			s2.contains(fillData[i]);
 		System.out.println(System.currentTimeMillis() - time);
-		
 		System.out.println("compactify light map");
 		time = System.currentTimeMillis();
-		((LightHashMap) m2).compactify(0.90f);
+		((LightHashSet) s2).compactify(0.95f);
 		System.out.println(System.currentTimeMillis() - time);
-		
 		System.out.println("transfer to hashmap");
 		time = System.currentTimeMillis();
-		new HashMap(m1);
+		new HashSet(s1);
 		System.out.println(System.currentTimeMillis() - time);
 		time = System.currentTimeMillis();
-		new HashMap(m2);
+		new HashSet(s2);
 		System.out.println(System.currentTimeMillis() - time);
-		
 		System.out.println("transfer to lighthashmap");
 		time = System.currentTimeMillis();
-		new LightHashMap(m1);
+		new LightHashSet(s1);
 		System.out.println(System.currentTimeMillis() - time);
 		time = System.currentTimeMillis();
-		new LightHashMap(m2);
+		new LightHashSet(s2);
 		System.out.println(System.currentTimeMillis() - time);
-		
 		System.out.println("remove entry by entry");
 		time = System.currentTimeMillis();
 		for (int i = 0; i < fillData.length; i++)
-			m1.remove(fillData[i]);
+			s1.remove(fillData[i]);
 		System.out.println(System.currentTimeMillis() - time);
 		time = System.currentTimeMillis();
 		for (int i = 0; i < fillData.length; i++)
-			m2.remove(fillData[i]);
+			s2.remove(fillData[i]);
 		System.out.println(System.currentTimeMillis() - time);
 	}
 
 	public static void main(final String[] args) {
 		System.out.println("Call with -Xmx300m -Xcomp -server");
-		//Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
+		Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
 
 		// some quadratic probing math test:
 		/*
@@ -495,7 +392,8 @@ public class LightHashMap<S,T> extends AbstractMap<S,T> implements Cloneable {
 		int hash = 0xc8d3 << 1;
 		int position = hash & (testArr.length -1);
 		int probe = 0;
-		do {
+		do
+		{
 			position = (hash + probe + probe * probe) & (testArr.length - 1);
 			probe++;
 			testArr[position] = true;
@@ -511,7 +409,7 @@ public class LightHashMap<S,T> extends AbstractMap<S,T> implements Cloneable {
 
 
 		try {
-			Thread.sleep(5000);
+			Thread.sleep(300);
 		} catch (final InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -537,44 +435,44 @@ public class LightHashMap<S,T> extends AbstractMap<S,T> implements Cloneable {
 			fillData[i].hashCode();
 		}
 
-		final Map m1 = new HashMap();
-		final Map m2 = new LightHashMap();
+		final Set s1 = new HashSet();
+		final Set s2 = new LightHashSet();
 
 		for (int i=0;i<fillData.length*10;i++) {
 			int random = rnd.nextInt(fillData.length);
 
-			m1.put(null, fillData[i%fillData.length]);
-			m2.put(null, fillData[i%fillData.length]);
-			if (!m1.equals(m2))
+			s1.add(null);
+			s2.add(null);
+			if (!s1.equals(s2))
 				System.out.println("Error 0");
-			m1.put(fillData[random], fillData[i%fillData.length]);
-			m2.put(fillData[random], fillData[i%fillData.length]);
-			if (!m1.equals(m2))
+			s1.add(fillData[random]);
+			s2.add(fillData[random]);
+			if (!s1.equals(s2))
 				System.out.println("Error 1");
 		}
 
 		// create thombstones, test removal
 		for (int i=0;i<fillData.length/2;i++) {
 			int random = rnd.nextInt(fillData.length);
-			m1.remove(fillData[random]);
-			m2.remove(fillData[random]);
-			if (!m1.equals(m2))
+			s1.remove(fillData[random]);
+			s2.remove(fillData[random]);
+			if (!s1.equals(s2))
 				System.out.println("Error 2");
 		}
 
 		// do some more inserting, this time with thombstones
 		for (int i=0;i<fillData.length*10;i++) {
 			int random = rnd.nextInt(fillData.length);
-			m1.put(fillData[random], fillData[i%fillData.length]);
-			m1.put(null, fillData[i%fillData.length]);
-			m2.put(fillData[random], fillData[i%fillData.length]);
-			m2.put(null, fillData[i%fillData.length]);
-			if (!m1.equals(m2))
+			s1.add(fillData[random]);
+			s1.add(null);
+			s2.add(fillData[random]);
+			s2.add(null);
+			if (!s1.equals(s2))
 				System.out.println("Error 3");
 		}
 
-		Iterator i1 = m1.entrySet().iterator();
-		Iterator i2 = m2.entrySet().iterator();
+		Iterator i1 = s1.iterator();
+		Iterator i2 = s2.iterator();
 		// now try removal with iterators
 		while (i1.hasNext()) {
 			i1.next();
@@ -583,12 +481,12 @@ public class LightHashMap<S,T> extends AbstractMap<S,T> implements Cloneable {
 			i2.remove();
 		}
 
-		if (!m1.equals(m2))
+		if (!s1.equals(s2))
 			System.out.println("Error 4");
 
 
 		// test churn/thombstones
-		m2.clear();
+		s2.clear();
 		/*
 		for (int i=0;i<fillData.length*10;i++) {
 			int random = rnd.nextInt(fillData.length);
@@ -596,14 +494,16 @@ public class LightHashMap<S,T> extends AbstractMap<S,T> implements Cloneable {
 			m2.put(fillData[random], fillData[i%fillData.length]);
 		}
 		*/
+
 		for (int i = 0;i<100000;i++) {
 			rnd.nextBytes(buffer);
 			String s = new String(buffer);
-			m2.put(s, buffer);
-			m2.containsKey(s);
-			m2.remove(s);
+			s2.add(s);
+			s2.contains(s);
+			s2.remove(s);
 		}
 
 		System.out.println("checks done");
+
 	}
 }
