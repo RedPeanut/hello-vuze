@@ -5,6 +5,10 @@ import org.eclipse.swt.widgets.Display;
 
 public class Colors {
 	
+	public static final int BLUES_DARKEST = 9;
+	
+	public static Color[] blues = new Color[BLUES_DARKEST + 1];
+	
 	public static Color black;
 	public static Color light_grey;
 	public static Color dark_grey;
@@ -47,5 +51,7 @@ public class Colors {
 		fadedYellow = new Color(display, 255, 255, 221);
 		white 		= new Color(display, 255, 255, 255);
 		background 	= new Color(display, 248, 248, 248);
+		
+		blues[Colors.BLUES_DARKEST] = new Color(display, 22, 131, 251);
 	}
 }
